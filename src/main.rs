@@ -116,7 +116,7 @@ fn parse_reorder(columns_str: &String) -> Vec<usize> {
          error_exit(&format!("Invalid column: {}", column).to_owned());
       }
 
-      columns.push(column);
+      columns.push(column - 1);
    }
 
    return columns;
@@ -250,16 +250,13 @@ fn parse_args(args: &Vec<String>) -> ArgMatches {
       .help("A comma separated list of column indices")
       .short("c")
       .long("columns")
-      .value_name("LIST")
-      .required(true)
-      .conflicts_with("fields");
+      .value_name("LIST");
 
    let arg_fields = Arg::with_name("fields")
       .help("A comma separated list of column names")
       .short("f")
       .long("fields")
-      .value_name("LIST")
-      .conflicts_with("columns");
+      .value_name("LIST");
 
    let arg_input = Arg::with_name("input-file")
       .help("CSV file")
@@ -280,7 +277,7 @@ fn parse_args(args: &Vec<String>) -> ArgMatches {
       .subcommand(SubCommand::with_name("cut")
                   .about("Cuts out columns")
                   .arg(&arg_delimiter)
-                  .arg(&arg_columns)
+                  .arg(&arg_columns.clone().required(true))
                   .arg(&arg_input)
                   .arg(&arg_output))
       .subcommand(SubCommand::with_name("reorder")
@@ -292,6 +289,7 @@ fn parse_args(args: &Vec<String>) -> ArgMatches {
                   .arg(&arg_output)
                   .group(ArgGroup::with_name("columns or fields")
                          .args(&["columns", "fields"])
+                         .multiple(false)
                          .required(true)))
       .setting(AppSettings::SubcommandRequiredElseHelp)
       .get_matches_from(args);
